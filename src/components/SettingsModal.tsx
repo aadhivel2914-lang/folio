@@ -578,7 +578,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
                 <h3 className="text-sm font-bold text-white">Profile Photo Controls</h3>
                 <p className="text-xs text-slate-400">
-                  Crop, rotate, and zoom your portrait directly in the visual editor.
+                  The portfolio includes a permanent project asset (<code className="text-emerald-300">/assets/profile.svg</code>) so all visitors see your photo on any device without logging in. You can test a local device preview or download a cropped PNG to update the permanent shared asset.
                 </p>
                 <button
                   onClick={() => {
@@ -587,7 +587,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }}
                   className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl transition-all cursor-pointer"
                 >
-                  Launch Profile Photo Cropper
+                  Launch Profile Photo Manager
                 </button>
               </div>
 

@@ -13,6 +13,7 @@ export const DEFAULT_PORTFOLIO: PortfolioData = {
     title: 'Aspiring IT Professional | AI & Data Science Enthusiast',
     shortIntro: 'Undergraduate student in Artificial Intelligence & Data Science passionate about solving real-world challenges through intelligent algorithms, computer vision, and modern full-stack web applications.',
     aboutStory: 'I am an undergraduate student currently pursuing my B.Sc. in Computer Science with a specialization in Artificial Intelligence and Data Science at Sona College of Arts and Science, Salem (2024–2027). With a grounded foundation in algorithmic problem-solving and software development, I actively explore image processing, optical character recognition (OCR), machine learning workflows, and responsive full-stack web engineering. Having completed an intensive Full Stack Web Development internship at Futogen Institutions, I value building clean, dependable software solutions and continuously mastering emerging industry technologies.',
+    profilePhoto: '/assets/profile.svg',
     languages: [
       { name: 'Tamil', proficiency: 'Native / Fluent' },
       { name: 'English', proficiency: 'Professional Working Proficiency' },

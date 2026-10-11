@@ -31,7 +31,8 @@ import { Check, AlertCircle } from 'lucide-react';
 
 export default function App() {
   const [data, setData] = useState<PortfolioData>(DEFAULT_PORTFOLIO);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string>('/assets/profile.svg');
+  const [isLocalPhotoActive, setIsLocalPhotoActive] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals state
@@ -57,7 +58,9 @@ export default function App() {
           getProfilePhoto(),
         ]);
         setData(savedData);
-        setProfilePhoto(savedPhoto);
+        const permanentDefault = savedData.personalInfo.profilePhoto || '/assets/profile.svg';
+        setProfilePhoto(savedPhoto || permanentDefault);
+        setIsLocalPhotoActive(Boolean(savedPhoto));
       } catch (e) {
         console.warn('Initialization storage error:', e);
       } finally {
@@ -83,13 +86,16 @@ export default function App() {
   const handleSavePhoto = async (dataUrl: string) => {
     await saveProfilePhoto(dataUrl);
     setProfilePhoto(dataUrl);
-    showToast('Profile photo updated successfully!');
+    setIsLocalPhotoActive(true);
+    showToast('Device preview saved! To make it permanent for all devices, download profile.png and commit to GitHub.');
   };
 
   const handleRemovePhoto = async () => {
     await removeProfilePhoto();
-    setProfilePhoto(null);
-    showToast('Profile photo removed. Restored default avatar.', 'info');
+    const permanentDefault = data.personalInfo.profilePhoto || '/assets/profile.svg';
+    setProfilePhoto(permanentDefault);
+    setIsLocalPhotoActive(false);
+    showToast('Restored default permanent profile photo.', 'info');
   };
 
   // Portfolio Data handlers
@@ -102,7 +108,9 @@ export default function App() {
   const handleResetData = async () => {
     const restored = await resetPortfolioData();
     setData(restored);
-    setProfilePhoto(null);
+    const permanentDefault = restored.personalInfo.profilePhoto || '/assets/profile.svg';
+    setProfilePhoto(permanentDefault);
+    setIsLocalPhotoActive(false);
     showToast('Restored original resume defaults.');
   };
 
@@ -171,6 +179,7 @@ export default function App() {
         <Hero
           data={data}
           profilePhoto={profilePhoto}
+          isLocalPhotoActive={isLocalPhotoActive}
           onOpenPhotoModal={() => setPhotoModalOpen(true)}
           onDownloadResume={handleDownloadResume}
         />
@@ -213,6 +222,7 @@ export default function App() {
         isOpen={photoModalOpen}
         currentPhoto={profilePhoto}
         userName={data.personalInfo.name}
+        isLocalPhotoActive={isLocalPhotoActive}
         onClose={() => setPhotoModalOpen(false)}
         onSavePhoto={handleSavePhoto}
         onRemovePhoto={handleRemovePhoto}

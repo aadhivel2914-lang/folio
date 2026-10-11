@@ -10,6 +10,7 @@ export interface PersonalInfo {
   title: string;
   shortIntro: string;
   aboutStory: string;
+  profilePhoto?: string;
   languages: { name: string; proficiency: string }[];
   interestHighlights: string[];
 }

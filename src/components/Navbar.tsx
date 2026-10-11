@@ -65,18 +65,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Click to edit profile photo"
             className="group relative w-10 h-10 rounded-full overflow-hidden border border-emerald-500/30 hover:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all cursor-pointer bg-slate-900 shrink-0"
           >
-            {profilePhoto ? (
-              <img 
-                src={profilePhoto} 
-                alt={data.personalInfo.name} 
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover" 
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-slate-900 to-emerald-950 flex items-center justify-center text-emerald-400 font-bold text-sm">
-                AV
-              </div>
-            )}
+            <img 
+              src={profilePhoto || '/assets/profile.svg'} 
+              alt={data.personalInfo.name} 
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.src.endsWith('/assets/profile.svg')) {
+                  target.src = '/assets/profile.svg';
+                }
+              }}
+              className="w-full h-full object-cover" 
+            />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
               <Camera className="w-3.5 h-3.5 text-white" />
             </div>

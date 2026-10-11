@@ -10,7 +10,10 @@ import {
   AlertCircle, 
   Camera, 
   Move,
-  Info
+  Info,
+  Download,
+  Globe,
+  Smartphone
 } from 'lucide-react';
 import { CropState } from '../types/portfolio';
 
@@ -18,6 +21,7 @@ interface ProfilePhotoModalProps {
   isOpen: boolean;
   currentPhoto: string | null;
   userName: string;
+  isLocalPhotoActive: boolean;
   onClose: () => void;
   onSavePhoto: (dataUrl: string) => Promise<void>;
   onRemovePhoto: () => Promise<void>;
@@ -27,6 +31,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
   isOpen,
   currentPhoto,
   userName,
+  isLocalPhotoActive,
   onClose,
   onSavePhoto,
   onRemovePhoto,
@@ -181,7 +186,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
     setIsDragging(false);
   };
 
-  const handleSave = async () => {
+  const handleSaveLocal = async () => {
     if (!canvasRef.current) return;
     try {
       setIsSaving(true);
@@ -192,8 +197,20 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
       onClose();
     } catch (e) {
       setIsSaving(false);
-      setErrorMessage('Could not save photo to persistent storage.');
+      setErrorMessage('Could not save photo to device storage.');
     }
+  };
+
+  const handleDownloadForDeployment = () => {
+    if (!canvasRef.current) return;
+    // Generate clean PNG file named profile.png
+    const pngUrl = canvasRef.current.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = pngUrl;
+    a.download = 'profile.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleRemove = async () => {
@@ -211,7 +228,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Top Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/80">
@@ -220,8 +237,8 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
               <Camera className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">Upload & Adjust Profile Photo</h2>
-              <p className="text-xs text-slate-400">Position your headshot for the portfolio</p>
+              <h2 className="text-base font-bold text-white">Profile Photo Manager</h2>
+              <p className="text-xs text-slate-400">Position your headshot & configure cross-device visibility</p>
             </div>
           </div>
 
@@ -235,8 +252,35 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5 overflow-y-auto">
           
+          {/* Status Indicator */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+            <div className="flex items-center gap-2 text-slate-300">
+              {isLocalPhotoActive ? (
+                <>
+                  <Smartphone className="w-4 h-4 text-emerald-400" />
+                  <span><strong>Device Preview Active:</strong> Saved in this browser</span>
+                </>
+              ) : (
+                <>
+                  <Globe className="w-4 h-4 text-cyan-400" />
+                  <span><strong>Permanent Shared Asset:</strong> Visible to all devices</span>
+                </>
+              )}
+            </div>
+
+            {isLocalPhotoActive && (
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="text-[11px] text-rose-400 hover:underline cursor-pointer"
+              >
+                Reset to Shared Asset
+              </button>
+            )}
+          </div>
+
           {/* Error message */}
           {errorMessage && (
             <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs flex items-start gap-2">
@@ -248,7 +292,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
           {/* Canvas or Current Photo Preview Area */}
           <div className="flex flex-col items-center justify-center">
             <div 
-              className="relative w-64 h-64 rounded-full overflow-hidden border-2 border-emerald-500/50 bg-slate-950 flex items-center justify-center shadow-xl cursor-grab active:cursor-grabbing select-none"
+              className="relative w-60 h-60 sm:w-64 sm:h-64 rounded-full overflow-hidden border-2 border-emerald-500/50 bg-slate-950 flex items-center justify-center shadow-xl cursor-grab active:cursor-grabbing select-none"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
@@ -264,15 +308,17 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
                   src={currentPhoto}
                   alt={userName}
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/assets/profile.svg';
+                  }}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="flex flex-col items-center justify-center p-6 text-center">
-                  <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold text-emerald-400 mb-2">
-                    AV
-                  </div>
-                  <span className="text-xs text-slate-400">Default Avatar Active</span>
-                </div>
+                <img
+                  src="/assets/profile.svg"
+                  alt={userName}
+                  className="w-full h-full object-cover"
+                />
               )}
 
               {selectedRawImage && (
@@ -284,7 +330,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
             </div>
 
             {/* File Picker trigger */}
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -299,18 +345,18 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
                 className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl transition-all cursor-pointer shadow-sm"
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>{selectedRawImage || currentPhoto ? 'Choose Another Image' : 'Select Photo from Device'}</span>
+                <span>{selectedRawImage || currentPhoto ? 'Choose Another Photo' : 'Select Photo from Device'}</span>
               </button>
 
-              {(currentPhoto || selectedRawImage) && (
+              {(currentPhoto || isLocalPhotoActive) && !selectedRawImage && (
                 <button
                   type="button"
                   onClick={handleRemove}
                   className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 border border-rose-900/60 rounded-xl transition-all cursor-pointer"
-                  title="Remove custom photo and reset to default avatar"
+                  title="Reset to permanent shared asset"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>Remove Photo</span>
+                  <span>Restore Default Asset</span>
                 </button>
               )}
             </div>
@@ -324,9 +370,10 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
                 <span className="text-emerald-400 font-mono">Zoom: {crop.zoom.toFixed(1)}x</span>
               </div>
 
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-3">
                 {/* Zoom out */}
                 <button
+                  type="button"
                   onClick={() => handleZoomChange(-0.15)}
                   className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
                   title="Zoom Out"
@@ -352,6 +399,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
 
                 {/* Zoom in */}
                 <button
+                  type="button"
                   onClick={() => handleZoomChange(0.15)}
                   className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
                   title="Zoom In"
@@ -361,6 +409,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
 
                 {/* Rotate 90deg */}
                 <button
+                  type="button"
                   onClick={handleRotate}
                   className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
                   title="Rotate 90 degrees"
@@ -371,18 +420,24 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
             </div>
           )}
 
-          {/* Persistent storage disclaimer */}
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-[11px] text-slate-400 flex items-start gap-2">
-            <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-            <span>
-              <strong>Local Persistence:</strong> Your photo is saved in your browser's IndexedDB and persists across reloads and tab closures. It does not synchronize automatically across different devices unless connected to an authenticated backend image bucket.
-            </span>
+          {/* Cross-Device Deployment Instructions Card */}
+          <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-slate-300 space-y-2.5">
+            <div className="flex items-center gap-2 font-semibold text-emerald-400">
+              <Globe className="w-4 h-4" />
+              <span>How Cross-Device Visibility Works:</span>
+            </div>
+            <p className="text-[11.5px] text-slate-400 leading-relaxed">
+              <strong>1. Default Asset:</strong> The portfolio includes a permanent project asset (<code className="text-emerald-300">/assets/profile.svg</code>) bundled into the site build so all visitors on any device see Aadhipradhap's profile photo without logging in.
+            </p>
+            <p className="text-[11.5px] text-slate-400 leading-relaxed">
+              <strong>2. Permanent Custom Photo:</strong> If you crop a new personal photo below, click <span className="text-white font-semibold">"Download profile.png"</span> and replace <code className="text-emerald-300">public/assets/profile.svg</code> (or add <code className="text-emerald-300">public/assets/profile.png</code>) in your GitHub repository. Vercel will rebuild and show it on every device in the world!
+            </p>
           </div>
 
         </div>
 
         {/* Modal Actions Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={onClose}
@@ -391,17 +446,29 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
             Cancel
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {selectedRawImage && (
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 rounded-xl transition-all shadow-md shadow-emerald-500/20 cursor-pointer"
-              >
-                <Check className="w-4 h-4" />
-                <span>{isSaving ? 'Saving Photo...' : 'Save & Apply Photo'}</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleDownloadForDeployment}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all cursor-pointer border border-slate-700"
+                  title="Download cropped photo as profile.png to commit to GitHub"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Download profile.png</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveLocal}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 rounded-xl transition-all shadow-md shadow-emerald-500/20 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{isSaving ? 'Saving...' : 'Apply Device Preview'}</span>
+                </button>
+              </>
             )}
           </div>
         </div>

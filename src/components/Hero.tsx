@@ -17,6 +17,7 @@ import { PortfolioData } from '../types/portfolio';
 interface HeroProps {
   data: PortfolioData;
   profilePhoto: string | null;
+  isLocalPhotoActive?: boolean;
   onOpenPhotoModal: () => void;
   onDownloadResume: () => void;
 }
@@ -24,6 +25,7 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({
   data,
   profilePhoto,
+  isLocalPhotoActive,
   onOpenPhotoModal,
   onDownloadResume,
 }) => {
@@ -167,25 +169,23 @@ export const Hero: React.FC<HeroProps> = ({
               {/* Main Avatar Circular Frame */}
               <div className="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full p-2 bg-gradient-to-b from-emerald-500/40 via-slate-800 to-slate-950 shadow-2xl">
                 <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-900 border-2 border-slate-700/60">
-                  {profilePhoto ? (
-                    <img
-                      src={profilePhoto}
-                      alt={data.personalInfo.name}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    /* High-fidelity default stylized avatar with gradient initials & tech pattern */
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950 text-center p-6 select-none">
-                      <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-3xl font-extrabold text-emerald-400 mb-3 shadow-inner">
-                        AV
-                      </div>
-                      <span className="text-base font-bold text-white tracking-wide">
-                        {data.personalInfo.name}
-                      </span>
-                      <span className="text-xs text-slate-400 mt-1 max-w-[180px]">
-                        AI & Data Science Student
-                      </span>
+                  <img
+                    src={profilePhoto || '/assets/profile.svg'}
+                    alt={data.personalInfo.name}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('/assets/profile.svg')) {
+                        target.src = '/assets/profile.svg';
+                      }
+                    }}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+
+                  {/* Device Preview indicator badge if local override is active */}
+                  {isLocalPhotoActive && (
+                    <div className="absolute top-3 inset-x-0 mx-auto w-fit z-20 px-2.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-500/60 text-emerald-300 text-[10px] font-semibold tracking-wide pointer-events-none shadow-md">
+                      Device Preview
                     </div>
                   )}
 
